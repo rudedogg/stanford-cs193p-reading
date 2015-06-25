@@ -167,3 +167,89 @@ if convertedNumber != nil {
 
 // using ! to access a non-existent option value triggers a runtime error.  Don't let it happen - check != nil first!
 
+// Optional Binding
+// Optional binding can be used on if and while statements
+// If the value exists, it extracts it to a temp variable, all in one step
+var someOptional: String? = "Test"
+var someOptional2: String?
+
+// the temp variable can be a constant
+if let constantName = someOptional {
+    print(constantName)
+}
+
+// Nothing is output, the if is skipped since someOptional2 doesn't have a value
+if var varName = someOptional2 {
+    print(varName)
+}
+
+
+// Int().init?(string) allows this to work (it returns an optional). Pattern should be useful.
+// can be either a variable or constant
+if let actualNumber = Int(possibleNumber) {
+    print("\'\(possibleNumber)\' has an integer value of \(actualNumber)")
+}
+else {
+    print("\'\(possibleNumber)\' could not be converted to an integer")
+}
+
+
+// multiple optional bindings - both must have a value
+if let actualNumber = Int(possibleNumber), var varName = someOptional {
+    print(actualNumber)
+    print(someOptional2)
+}
+
+// implicitly unwrapped optionals
+// Used when you know an optional will always have a value after it is set, and makes it so you don't have to unwrap it to use it
+// think of it as giving permission for the optional to be unwrapped automatically
+// declared with a `!` following the type, rather than a `?`
+let newOptional: String! = "Testing"
+print(newOptional)
+
+
+if newOptional != nil {
+    print(newOptional) // check isn't required but is allowed.  Should use a normal Optional instead in this case though!
+}
+
+// combining implicitly unwrapped optional and option binding to create a var that is implicitly unwrapped
+if let definiteString = newOptional {
+    print(definiteString)
+}
+
+
+
+/* Assertions */
+// Use assertions when a value can be false, but MUST be true to continue.  Not an alternative for properly checking things in code and working with the user, but useful for development
+
+// this triggers the assertion, true is not = to false
+//assert(true==false, "Descriptive message to help debug the assert")
+
+// message is optional
+//assert(1>=2)
+
+
+/* Basic Operators */
+/* Assignment Operator */
+// Assign multiple values using tuples
+let (x1, y1) = (1, 2)
+print(x1)
+print(y1)
+
+print("Strings can be " + "concatenated with +")
+
+/* Modulo/Remainder */
+10 % 3
+// Works for floating point too :)
+1 % 0.99
+// And negatives
+10 % -8
+-10 % 8
+
+// Unary minus operator - toggles the sign - + becomes -, - becomes +
+var x3 = 300
+-x3
+var x4 = -400
+-x4
+
+x3 += x4
