@@ -230,6 +230,11 @@ if let definiteString = newOptional {
 
 
 /* Basic Operators */
+// Temrinology
+// Unary operator - operates on a single target.  The -var (unary minus operator) is an example
+// Binary operator - operates on two targets - var1 * var2 (multiplication, addition, etc)
+// Ternary operator - operates on three targets.  The ternary conditional operator is an example (x>1 ? true : false)
+
 /* Assignment Operator */
 // Assign multiple values using tuples
 let (x1, y1) = (1, 2)
@@ -246,10 +251,381 @@ print("Strings can be " + "concatenated with +")
 10 % -8
 -10 % 8
 
-// Unary minus operator - toggles the sign - + becomes -, - becomes +
+/* Unary minus operator */
+// - toggles the sign - + becomes -, - becomes +
 var x3 = 300
 -x3
 var x4 = -400
 -x4
 
+/* Compound assignment operators */
 x3 += x4
+// compound assignment operators don't return a value though - compoundAssignment isn't set
+let compoundAssignment = x3 += x4
+print(compoundAssignment)
+
+/* incrememnt/decrement operators */
+var inc = 1
+inc++ // increments inc AFTER returning it's value
+// inc is now 2
+++inc // increments inc BEFORE returning it's value
+inc--
+--inc
+// typically you'll want to use ++var and --var since it's usually the desired behavior
+
+
+/* Ternary conditional operator */
+// question ? returnIfTrue : returnIfFalse
+// avoid overuse, especially in a single statement!
+
+// replaces
+/* 
+if question {
+  returnIfTrue
+} else {
+  returnIfFalse
+}
+*/
+
+// Example of setting a row's height using the ternary conditional operator
+let contentHeight = 40
+let hasHeader = true
+let rowHeight = contentHeight + (hasHeader ? 50 : 20)
+
+
+/* Range Operators */
+/* Closed Range Operator */
+for index in 1...5 {
+    print(index)
+}
+
+/* Half-Open Range Operator */
+// Gives a range but is not inclusive, (0..>3) would be 0, 1, 2
+// Useful for looping over arrays
+let names = ["Austin", "George", "Frank"]
+
+let count = names.count
+
+for i in 0..<count {
+    print(names[i])
+}
+
+
+/* Logical Operators */
+// evaluated left to right
+// !a = NOT  // use good variable names ie !allowedEntry is read as "not allowed entry"
+// a && b = AND
+// a || b = OR
+
+
+/* Strings and Characters */
+// strings are represented by the String type, which represents a collection of values of the Character type
+// + concatenates
+// var/let controls mutability, like all values in swift
+// Swift String is bridged with Foundation's NSString class.  The NSString API is available on any swift String when you cast it to NSString
+// A Swift String can be used with any API that requires an NSString instance
+let stringLiteral = "This is a string literal.  It's type is inferred as a string since I've assigned an initial string value"
+
+// Initializing an empty string ( these two methods create identical strings)
+var emptyString = "" // empty string literal
+var anotherEmptyString = String() // initializer syntax
+
+// check if a string is empty using the .isEmpty property
+if emptyString.isEmpty {
+    print("Uh oh, that emptyString is empty")
+}
+
+// mutability
+var mutable = "I am"
+mutable += " a mutant"
+
+// let crates a constant as expected
+let unmutable = "I am"
+//unmutable += " not a mutant, and this throws an error!"
+
+// Strings are value types
+// anytime you pass a string a new COPY is sent, NOT the original String (or a reference/pointer)
+// this means you need not worry about altering a String in a function, it is merely a copy, and can only be modified by you
+// The copy-by-default behavior is optimized by the compiler, a copy is only created when necessary (you change it's value)
+
+// Characters
+// Characters can be accessed through the .characters property
+for letter in "THis is a string!".characters {
+    print(letter)
+}
+
+// Stand alone Character
+let exclamation: Character = "!"
+print(exclamation)
+
+// String values can be constructed with an array of Characters
+
+let catCharacters: [Character] = ["C", "A", "T"]
+let catString = String(catCharacters)
+print(catString)
+
+var favoritePlay = "Cats"
+// use String.append() to append a character to a string. To append a String to a String, just use +
+favoritePlay.append(exclamation)
+
+// String Interpolation
+// Include values in a String
+var message = "5.5 * 5 = \(5.5 * 5)"
+// expressions in the parentheses of an interpolated string cannot contain an escaped `\` or `"`
+
+// Counting Characters
+"this is a long string".characters.count
+"123".characters.count
+
+var cafe = "cafe"
+cafe.characters.count
+print(cafe)
+
+// append unicode accent character to "cafe"
+cafe += "\u{301}"
+
+// unicode characters may not affect the count!
+cafe.characters.count // still four characters, even though we've added the accent character
+print(cafe)
+// Characters in a string don't all use the same amount of memory!
+// .characters causes Swift to loop over the entire string, may cause issues on a really large string.
+
+
+// Comparing Strings
+"this" == "that"
+
+// Strings are considered equal if their extended grapheme clusters are canonically equivalent
+"\u{E9}" == "\u{65}\u{301}"
+// both are equivalent to é
+
+// On the other hand, Latin A and Russian A are not considered equal, since they do not have the same linguistic meaning. 
+// String and character comparisons are not locale-sensitive
+
+
+// Prefix and Suffix Equality
+// Performs a character-by-character canonical equivalence comparison as described above
+"This".hasPrefix("Th")
+"This".hasSuffix("s")
+
+
+
+/* Mutability of Collections */
+// collections: Array, Set, Dictionary
+// Like the rest of Swift, collections are strongly typed and only store one type
+// var = mutable, let = immutable
+// use immutable collections (constants) if the collection doesn't need to change.  When using let Swift can perform optimizations
+
+// Arrays
+// Swift's Array type is bridged to Foundation's NSArray class
+
+// long form
+var collection: Array<String> = []
+//short form (preferred)
+var collection2 = [String]()
+
+collection2.append("This")
+collection2.count
+
+// If type information is already provided, an Array can be cleared using:
+collection2 = [] // collection2 is still of type [String]
+collection2.append("It knows I'm a String")
+
+// Array Initializers
+// pass the initializer two variables, `count` which is the number of items, and `repeatedValue` which is the default)
+var threeDoubles = [Double](count:3, repeatedValue: 0.0)
+print(threeDoubles)
+
+var moreDoubles = [Double](count:2, repeatedValue: 1.5)
+
+// Arrays of the same type can be concatenated, the type is inferred
+var myDoubles = threeDoubles + moreDoubles
+print(myDoubles)
+
+// Arrays can be initialized using an "Array Literal"
+var shoppingList: [String] = ["Eggs", "Bacon"]
+// this is the exact same, since we are initializing the array with string literals, Swift knows to use the String type
+var shoppingList2 = ["Eggs", "Bacon"]
+
+// get the number of items in an array (read-only property).  Don't try incrementing count to expand an Array!
+shoppingList.count
+
+// isEmpty propery returns a boolean, does count == 0 comparison
+shoppingList.isEmpty
+
+// Add compatible items to array
+shoppingList.append("Tabasco")
+shoppingList += ["new car", "new house"]
+
+// Get items in array using subscript syntax
+// Arrays in swift are zero-indexed
+var firstItem = shoppingList[0]
+
+// Get the last item in an Array.  Returns an Optional, will return nil ONLY if the .isEmpty
+print(shoppingList.last)
+
+
+// Modify items in array
+shoppingList[3] = "like-new car"
+shoppingList
+// Can assign values using range.  Using a larger range than provided values will remove them
+shoppingList[1...4] = ["Bananas", "Apples"]
+print(shoppingList)
+
+
+// Insert item at index
+// We really need that maple syrup!
+shoppingList.insert("Maple Syrup", atIndex: 0)
+
+// Remove item at index
+// Found the syrup in the pantry, we don't need it anymore
+// removeAtIndex() returns the item, so it could be assigned like so: let firstItem = shoppingList.removeAtIndex(0)
+shoppingList.removeAtIndex(0)
+
+print(shoppingList)
+
+// Trying to access an invalid index throws a runtime error, the largest valid index is always count - 1 (due to using zero index)
+
+// Gaps are automatically closed - no sparse Arrays
+
+// to remove the last item of the Array, use removeLast() to save from querying the count
+let apples = shoppingList.removeLast()
+
+// Iteration
+// for in iterates over the values
+for item in shoppingList {
+    print(item)
+}
+
+// Array.enumerate() returns a pair with the index and value
+for (index, value) in shoppingList.enumerate() {
+    print("index: \(index) value: \(value)")
+}
+
+
+/* Control Loops */
+var dogs = ["Zoey", "Sasha"]
+// for in
+for dog in dogs {
+    print(dog)
+}
+// for in with index access
+for (index, value) in dogs.enumerate() {
+    print("Dog # \(index+1): \(value)")
+}
+// usual for loop
+for var index = 0; index < 3; ++index {
+    print(index)
+}
+
+// while - if true executes, stops when false
+var testCondition = 0
+
+while testCondition <= 5 {
+    print(testCondition++)
+}
+
+// repeat while (do while) - always runs at least once, continues executing while condition is true
+repeat {
+    print(testCondition++)
+} while testCondition <= 10
+
+
+
+/* Conditional Statements */
+var shouldRun = true
+
+// if statement
+if shouldRun {
+    print("We're running")
+} else {
+    print("We're not running")
+}
+
+
+// Switch
+let favoriteColor = "Red"
+// switch compares a value against several possibilities of the same type
+switch favoriteColor {
+ // case "Green":
+    // empty case is not allowed, this would throw an error!
+    case "Red", "Yellow":
+      print("My favorite color is Red (or Yellow)!")
+    case "Blue":
+      print("My favorite color is Blue!")
+default: // catch-all, MUST be last
+    print("My favorite color is \(favoriteColor)")
+}
+// once a match is found, the other conditions aren't evaluated! Only one case will be executed.  This is to prevent accidental fallthrough when a break is forgotten
+// no break statement required
+
+
+// ranges work too!
+var bestScore = 53
+switch bestScore {
+case 0...20:
+    print("You suck!")
+case 21...50:
+    print("You're okay")
+case 51...100:
+    print("You're good!")
+default:
+    print("Out of the park!")
+}
+// ranges work in switches because ... and ..< functions are overloaded to return eigher an IntervalType or Range.  An IntervalType in a switch statement, a Range in a for in loop
+
+// value binding
+let myPoint = (2, 0)
+
+switch myPoint {
+case(let x, 0):
+    print("On the X axis at \(x)")
+case(0, let y):
+    print("On the Y axis at \(y)")
+case(let x, let y):
+    print("At \(x),\(y)")
+}
+
+
+/* Control Transfer Statements */
+// swift has four control transfer statements
+//   continue
+//   break
+//   fallthrough
+//   return
+
+// continue
+// stops (short-circuits)  a loop and has it start again at the beginning of the next iteration
+// a for loop is still incrmemented
+
+
+// break
+// ends execution of an entire control flow statment (such as a switch or loop)
+// execution continues after the closing brace of the control flow statement, nothing else is executed!
+// break can be used to ignore a switch case - since an empty case causes a compile time error
+
+
+// fallthrough
+// exists since Swift doesn't require a break statement after each case, like other languages
+// will cause the next case to be executed (it's condition is NOT checked though!  it's executed no matter what!)
+
+
+
+/* Functions */
+
+func sayHello(personName: String) -> String {
+    return "Hello \(personName)"
+}
+
+func sayHello2() -> String {
+    return "Hello"
+}
+
+print(sayHello("Austin"))
+print(sayHello2())
+
+func times(_ x: Int,_ y: Int) -> Int {
+    return x * y
+}
+times(5,2)
+// functions with no return value return Void, which is an empty tuple ()
+// if a function has a return type, it must return a value! Not returning a value is a compile-time error 
