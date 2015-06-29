@@ -629,3 +629,362 @@ func times(_ x: Int,_ y: Int) -> Int {
 times(5,2)
 // functions with no return value return Void, which is an empty tuple ()
 // if a function has a return type, it must return a value! Not returning a value is a compile-time error 
+
+
+// Function Types
+// Every function has a function type, made up of its parameter tupes, and the return type of the function
+
+func addTwoInt(a: Int, _ b: Int) -> Int {
+    return a + b
+}
+
+func multiplyTwoInts(a: Int, _ b: Int) -> Int {
+    return a * b
+}
+// both functions above have the same Function Type: (Int, Int) -> Int
+
+func printHelloWorld() {
+    print("Hello World!")
+}
+// printHelloWorld() has a function type of () -> Void
+
+
+// Using function types
+var mathFunction: (Int, Int) -> Int = addTwoInt
+// The mathFunction and addTwoInt functions have the same function type - so this assignment is allowed by the Swift compiler.
+mathFunction(3, 5)
+
+mathFunction = multiplyTwoInts
+mathFunction(3, 5)
+
+// Like any other type, you can let Swift infer the function type from the assignment
+var anotherFunction = multiplyTwoInts
+anotherFunction(3, 5)
+
+// Function Types as Parameter Types
+// Allowing a function to be passed as a parameter allows for some flexibility
+func printMathResult( mathFunction: (Int, Int) -> Int, _ a: Int, _ b: Int) {
+    print("Result: \(mathFunction(a, b))")
+}
+printMathResult(multiplyTwoInts, 3, 5)
+
+// Function Types as Return Types
+// Function Types can be returned
+func stepForward(input: Int) -> Int {
+    return input + 1
+}
+
+func stepBackward(input: Int) -> Int {
+    return input - 1
+}
+
+stepForward(1)
+
+func chooseStepFunction(backwards: Bool) -> (Int) -> Int {
+    return backwards ? stepBackward: stepForward
+}
+// myStepper will store a reference to the stepForward function
+let myStepper = chooseStepFunction(false)
+myStepper(1)
+var currentValue = 3
+
+while currentValue != 5 {
+    print("\(currentValue)")
+    currentValue = myStepper(currentValue)
+}
+
+// Nested Functions
+// Functions can be defined inside other functions (nested functions)
+// Nested functions are only visible/accessable to the enclosing function
+// using Function Return Types, a nested function can be returned by the enclosing function though, allowing it to be used in another scope
+
+// rewrite the above and hide stepForward and stepBackward
+// better style since the functions are encapsulated
+func chooseStepFunctionNested(backwards: Bool) -> (Int) -> Int {
+    func stepBackward(x: Int) -> Int {
+        return x - 1
+    }
+    func stepForward(x: Int) -> Int {
+        return x + 1
+    }
+    return backwards ? stepBackward : stepForward
+}
+var myNewStepper = chooseStepFunctionNested(true)
+myNewStepper(2)
+
+
+/* Closures */
+// Closures capture and store references to any constants/variables from the context in which they are defined
+
+// Global and nested functions are closures
+//  - Global functions are closures that have a name and do not capture any values
+//  - Nested functions are closures that have a name and can capture values from their enclosing function
+//  - Closure expressions are unnamed, have a lightweight syntax, and can capture values from their surrounding context
+
+// Closure expressions have optimizations that encourage clear style and clutter-free syntax:
+// - Inferring parameter and return value types from context
+// - Implicit returns for single-expression closures
+// - Shorthand argument names
+// - Trailing closure syntax?
+
+
+// Closure Expressions
+// Closure expressions are espescially useful when calling functions that accept a function as an argument
+// Closure expressions are a way to write inline closures in a brief, focused syntax.
+// Closure expressions are just a shorthand form
+
+
+// Example using Sort function - the example code will get better with each iteration
+
+// array of names we want sorted in reverse alphabetical order
+let nameArray = ["Chris", "Alex", "Ewa", "Barry", "Daniella"]
+// Normal function
+func backwards(s1: String, s2: String) -> Bool {
+    return s1 > s2
+}
+var sortedArray = nameArray.sort(backwards)
+print(sortedArray)
+
+// Using a closure expression
+// Closure expressions can use any type of parameter, just like a normal funciton.  Default values however can't be provided
+// variadic parameters can be used- the variadic parameter must be named and in the argument list.  Tuples can be used as parameter types and return types too.
+sortedArray = nameArray.sort({(s1: String, s2: String) -> Bool in return s1 > s2 })
+// `in` marks the end of the parameter/return type definition and the beginning of the closure body
+print(sortedArray)
+
+// Using closures that infer type information
+// it is always possible to infer the parameter types and return type when passing a closure to a function as an inline closure expression
+// therefore you NEVER have to specify type information when passing an inline closure to a function
+// however explicitly declaring the types is recommended if it makes the code more clear
+sortedArray = nameArray.sort({s1, s2 in return s1 > s2})
+print(sortedArray)
+
+// Implicit returns from single-expression closures
+// remember that returning the result is implicit for closures consisting of a sing expression:
+sortedArray = nameArray.sort({s1, s2 in s1 > s2})
+print(sortedArray)
+
+
+// Shorthand argument names
+// Swift automatically provides shorthand argument names to inline closures: $0, $1, $2, etc.
+// using shorthand arguments allows you to omit the argument list, and the `in` keyword since you're only speciying the closure body
+sortedArray = nameArray.sort({$0 > $1})
+print(sortedArray)
+
+// Operator Functions
+// This works because the String type defines it's implementation of the greater than operator as accepting two String's, and returning a Bool.
+// Swift infers that we want the string-specific implementation of >
+sortedArray = nameArray.sort(>)
+print(sortedArray)
+
+/* Trailing Closures */
+// When you pass a closure as the last argument to a function, and the closure is long
+
+
+sortedArray = nameArray.sort() {$0 > $1}
+// this also works, the parenthesis aren't required if the trailing closure is the functions only argument
+sortedArray = nameArray.sort {$0 > $1}
+print(sortedArray)
+
+// Using a trailing closure with Array.map
+// notice how we don't have to wrap the closure in numbers.map's parenthesis
+let digitNames = [ 0: "Zero", 1: "One", 2: "Two",   3: "Three", 4: "Four", 5: "Five", 6: "Six", 7: "Seven", 8: "Eight", 9: "Nine" ]
+
+let numbers = [12, 33, 500]
+
+let strings = numbers.map() {
+    (var number) -> String in
+    var output = ""
+    while number > 0 {
+        output = digitNames[number % 10]! + output
+        number /= 10
+    }
+    return output
+}
+print(strings)
+
+
+
+/* Classes and Structures */
+// No interface/implementation files to allow a class to be used by other code (aka no header files)
+// Classes and Structures (types) are closer in functionality than in other languages.
+// The term instance is used rather than object (due to using structures as well as classes)
+
+// Things classes and structures have in common (both can):
+// - define properties to store values
+// - define methods to provide functionality
+// - define subscripts to provide access to their values using subscript syntax
+// - define initializers to set up their initial state
+// - be extended to expand their functionality beyond a default implementation
+// - conform to protocols to provide standard functionality of a certain kind
+
+// Classes have additional capabilities that structures do not:
+// - Inheritance enables one class to inherit characteristics of another
+// - Type casting enables you to check and interpret the type of a class and instance at runtime
+// - Deinitializers enable an instance of a class to free up any resources it has assigned
+// - reference counting allows more than one reference to a class instance
+
+// Note: Structures are ALWAYS copied when they are passed in code and do not use reference counting
+
+
+// Syntax
+class SomeClass {
+    
+}
+
+struct SomeStructure {
+    
+}
+// Defining a new class/struct is effectively defining a new swift type
+// Use CamelCase
+
+struct Resolution {
+    var width = 0
+    var height = 0
+}
+
+class VideoMode {
+    var resolution = Resolution()
+    var interlaced = false
+    var frameRate = 0.0
+    var name: String?
+}
+// Creating an instance - a class is just a decription/template of what a Resolution or VideoMode will look like
+// an instance creates an actual Resolution/VideoMode
+let someResolution = Resolution()
+let someVideoMode = VideoMode()
+
+
+// accessing properties
+print("The width of someResolution is \(someResolution.width)")
+print("The width of someVideoMode is \(someVideoMode.resolution.width)")
+
+// assigning a value to a property
+someVideoMode.resolution.height = 230
+
+print("The width of someVideoMode is now \(someVideoMode.resolution.width)")
+// this behavior is not like objective-c.  In objective-c you'd need to assign a new resolution property to set it's width
+
+// Memberwise Initializers
+let vga = Resolution(width: 640, height: 480)
+print("\(vga.height)")
+
+// unlike structures, classes DO NOT recieve a default memberwise initializer
+
+
+/* Properties */
+
+// stored and computed properties are usually associated with instances of a particular type
+// properties can also be associated with the type itself (type properties)
+
+// Stored Properties
+// stored properties store constant or variable values as part of an instance
+// stored properties are provided by classes and structures
+
+// Computed Properties
+// computed properties are provided by classes, structures, and enumerations.
+// computed properties calculate (rather than store) a value
+
+
+// Stored properties in depth
+// a stored property is a constant or variable stored as part of an instance of a particular class or structure.
+// variable stored properties (using var)
+// constant stored properties (using let)
+// the initial value for a stored can be set/modified during initialization (even for constant stored properties)
+
+
+// length is a constant and cannot be modified because it is a constant stored property
+struct FixedLengthRange {
+    var firstValue: Int
+    let length: Int
+}
+
+var rangeOfThreeItems = FixedLengthRange(firstValue: 0, length: 3)
+
+// the range represents integer values 0, 1, and 2
+
+// modifying a variable stored property
+rangeOfThreeItems.firstValue = 6
+
+
+// Stored Properties of Constant Structure Instances
+// if you create an instance of a structure, and assign it to a constant (using let), you cannot change it's properties - even if they are variable properties
+let rangeOfFourItems = FixedLengthRange(firstValue: 0, length: 4)
+// error - this isn't allowed, the struct instance is a constant (even though firstValue is a variable property)! :
+// rangeOfFourItems.firstValue = 6
+
+// This behavior is due to structures being value types
+// When an instance of a value type is marked as a constant, so are all of it's properties!
+
+// classes are different:
+// This is not true for classes, because they are reference types
+// if you assign an instance of a reference type to a constant, you can still change that instance's variable properties
+
+
+
+/* Computed Properties */
+//In addition to stored properties, classes, structures, and enumerations can define computed properties, which do not actually store a value
+// Computed properties provide a getter and optionally a setter to retrieve and set other properties and values indirectly
+
+
+struct Point {
+  var x = 0.0, y = 0.0
+}
+
+struct Size {
+    var width = 0.0, height = 0.0
+}
+
+struct Rect {
+    var origin = Point()
+    var size = Size()
+    // center is a computed property
+    // center can always be determined with origin and size, so manually storing center into a Point each time would be a waste
+    // defining a getter and setter allow us to work with center like it's a normal property
+    var center: Point {
+        
+        get {
+            let centerX = origin.x + (size.width / 2)
+            let centerY = origin.y + (size.height / 2)
+            return Point(x: centerX, y: centerY)
+        }
+        // setting center modifies the origin properties x and y values appropriately, moving the square to it's new position
+        set(newCenter) {
+            origin.x = newCenter.x - (size.width / 2)
+            origin.y = newCenter.y - (size.height / 2)
+        }
+        // shorthand setter declaration
+        // if the computed setter doesn't define a name for the new value, `newValue` is used/default
+        // set {
+        //    origin.x = newValue.x - (size.width / 2)
+        //    origin.y = newValue.y - (size.width / 2)
+        // }
+    }
+}
+
+var square = Rect(origin: Point(x: 0.0, y: 0.0), size: Size(width: 10.0, height: 10.0))
+let initialSquareCenter = square.center
+square.center.x
+square.center = Point(x: 15.0, y: 15.0)
+print("square.origin is now at \(square.origin.x), \(square.origin.y)")
+
+
+// Read-Only Computed Properties
+// a computed property with a getter and no setter is known as read-only
+// a read-only computed property is declared with var, since it's value still changes, we just don't provide an interface to change it manually
+
+// a read-only computed property can use the following shorted syntax
+
+struct Cuboid {
+    
+    var width = 0.0, height = 0.0, depth = 0.0
+    
+    // volume is a read only computed property, we just dropped the get {}
+    var volume: Double {
+        return width * height * depth
+    }
+}
+
+let fourByFiveByTwo = Cuboid(width: 5.0, height: 5.0, depth: 5.0)
+print (fourByFiveByTwo.volume)
+// allowing volume to be set would be confusing, so a read-only computed property is a nice solution that allows easy access to the current calculated volume
