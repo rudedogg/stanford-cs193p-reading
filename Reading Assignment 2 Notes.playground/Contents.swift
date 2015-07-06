@@ -207,7 +207,6 @@ default:
 }
 // unlike C, swift allows multiple matching switch cases.  When multiples matches are possible, the first matching case is always used
 
-
 // Value Bindings
 // a switch case can bind values it matches to temporary variables/constants:
 var someOtherPoint = (1, 5)
@@ -240,3 +239,31 @@ case let (x, y):
 
 /* Functions */
 // Functions with Multiple Return Values
+// a tuple can be used to return multiple values from a function as part of one compound value
+func minMax(array: [Int]) -> (min: Int, max: Int) {
+    return (array.minElement()!, array.maxElement()!)
+}
+// minMax returns both the min and max item in the array as a tuple of type (Int, Int)
+var results = minMax([1, 60,  5, 9])
+results.min
+results.max
+// since the return tuple members were labeled, you can use dot notation to retrieve the values
+
+
+// Optional Tuple Return Types
+// If the tuple type being returned can have "no value", you can use an optional tuple return type
+// specified with a question mark after the type definition: (Int, String)?
+func minMaxSafe(array: [Int]) -> (min: Int, max: Int)? {
+    if !array.isEmpty {
+        return (array.minElement()!, array.maxElement()!)
+    } else {
+        return nil
+    }
+}
+// minMax returns both the min and max item in the array as a tuple of type (Int, Int)
+var safeResults = minMaxSafe([])
+
+// Optional binding can be used to extract a value
+if let theResult = minMaxSafe([5, 2, 33]) {
+    print("The min is \(theResult.min) and the max is \(theResult.max)")
+}
