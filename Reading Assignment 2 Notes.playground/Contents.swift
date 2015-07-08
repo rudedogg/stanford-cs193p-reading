@@ -267,3 +267,263 @@ var safeResults = minMaxSafe([])
 if let theResult = minMaxSafe([5, 2, 33]) {
     print("The min is \(theResult.min) and the max is \(theResult.max)")
 }
+
+
+// Function Parameter Names
+// Functions parameters have both an external and a local parameter name
+// the internal name is only used within the function
+
+ // by default the first parameter omits its external name, and the other parameters use their loca names as their external name:
+func doSomething(myParam1: Int, myParam2: Int) -> Int {
+    return (myParam1 + myParam2)
+}
+doSomething(2, myParam2: 3)
+
+// all parameters must have unique kicak nanesm but may share external names
+
+// Specifying External Parameter Names
+func doSomethingElse(ext local: String) {
+    print(local)
+}
+doSomethingElse(ext: "Test")
+// if you provide an external parameter name for a parameter, it must ALWAYS be used when calling the function
+
+func sayHello(to person1: String, and person2: String) {
+    print("Hi \(person1) and \(person2)")
+}
+sayHello(to: "Zoey", and: "Sasha")
+// using expressive external parameter names as above is considered good style
+
+// Omitting External Parameter Names
+// You can omit the 2nd and beyond external parameter names by using _
+// the first parameter's external name is _ by default
+func someFunction(firstParameterName: Int, _ secondParameterName: Int) -> Int {
+    return firstParameterName + secondParameterName
+}
+someFunction(1, 5)
+
+// Default Parameter Values
+// place default parameters at the end of the argument list. It ensures calls to the function use the same order for non-default parameters
+func myNewFuncWithDefaultParam(highScore: Int = 0) -> Int {
+    return highScore
+}
+myNewFuncWithDefaultParam(555)
+
+
+// Variadic Parameters
+// a variadic parameter accepts 0 or more values of a specified type
+// Specify a variadic parameter by putting ... immediately after the parameter type
+
+func sumMultipleInts(numbers: Int...) -> Int {
+    var total = 0
+    for number in numbers {
+       total += number
+    }
+    return total
+}
+sumMultipleInts(5, 20, 11, 30, 55)
+
+func arithmeticMean(numbers: Double...) -> Double {
+    var total = 0.0
+    for number in numbers {
+        total += number
+    }
+    return total / Double(numbers.count)
+}
+
+arithmeticMean(22, 21, 20)
+// a function can have only one variadic parameter, and it must be the last parameter in the parameter list
+
+// Constant and Variable Parameters
+// function parameters are constants by default - attempting to change them in the function body is a compile error
+
+// to get a modifiable copy of the variable, use the prefix var:
+func alignRight(var string: String, totalLength: Int, pad: Character) -> String {
+    let amountToPad = totalLength - string.characters.count
+    if amountToPad < 1 {
+        return string
+    }
+    let padString = String(pad)
+    for _ in 1...amountToPad {
+        // string can be modified due to the var keyword in the parameter list, otherwise this wouldn't compile
+        // the variable parameter only exists in the function body
+        string = padString + string
+    }
+    return string
+}
+
+let originalString = "hello"
+let paddedString = alignRight(originalString, totalLength: 20, pad: " ")
+
+// In-Out Parameters
+// unlike variable parameters above, In-Out parameters can be used to make modifications in the function persist
+// in-out parameters are specified with the `inout` keyword
+// an inout parameter is passed into the function, modified, and passed back out of the function to replace the original value
+// only a variable (var) can be an inout, a constant (let) is not allowed
+// in the function call, you place an & before the parameter ot indicate you know it can be modified by the function
+// inout's cannot have default values, and variadic parameters cannot be inout
+// if you mark a parameter inout, it cannot also be marked var or let
+
+func swapTwoInts(inout a: Int, inout _ b: Int) {
+    let originalA = a
+    a = b
+    b = originalA
+}
+var a = 1
+var b = 2
+swapTwoInts(&a, &b)
+a
+b
+// inout parameters are an alternative way to modify data outside of a function (versus returning a value)
+
+
+/* Closures */
+// capturing values
+// a closure can capture values outside it's scope, and refer to/modify them within it's body, even though the original scope no longer exists
+// a nested function is the simplest example of a closure
+// -> Void -> Int means it returns a function which returns an Int
+func makeIncrementer(amount: Int) -> Void -> Int {
+    var runningTotal = 0
+    
+    func incrementer() -> Int {
+        runningTotal += amount
+        return runningTotal
+    }
+    return incrementer
+}
+let incrementByTen = makeIncrementer(10) // makeIncrementer returns a function which increments by 10
+incrementByTen()
+incrementByTen() // notice how the value of runningTotal is persisted - it is a reference within incrementor()
+// even though incrementByTen() returned, it still holds a reference to the existing runningTotal amount
+// since amount isn't mutated, it is stored as a copy of the value
+incrementByTen()
+// Swift determines what hsould be by value and by reference, it also does all the memory management
+
+let incrementBySeven = makeIncrementer(7)
+// incrementBySeven and incrementByTen contain different references and are independent
+incrementBySeven()
+incrementByTen()
+incrementBySeven()
+
+// if you assign a closure to a property of a class instance, the closure captures the instance.  You create a strong reference cycle between the closure and the instance.  
+// these reference cycles can be broken with "capture lists"
+
+
+// Closures are Reference Types
+// incrementBySeven() and incrementByTen() were able to increment their runningTotal because functions AND closures are reference types
+// here we're assigning a REFERENCE to incrementByTen.  let specifies that the reference cannot be changed, not that the function can't return a different value
+let anotherIncrementByTen = incrementByTen
+anotherIncrementByTen()
+
+
+
+/* Enumerations */
+// an enumeration defines a common type for a group of related values, and allows you to work with those values in a type-safe way
+// enumerations are first-class types, with many features traditionally supported only by classes: computed properties, instance methods, inititializers, extensions, and protocols.
+
+// Enumeration Syntax
+enum CompassPoint {
+    case North
+    
+    case South
+    
+    case East
+    
+    case West
+    
+    case Unknown
+}
+// North, South, etc are member values (or members)
+
+// multiple members can be on a single line:
+/*
+enum CompassPoint {
+    case North, South, East, West
+}
+*/
+
+// an enum definition defines a new type, so it should be Capitalized
+// give enumeration types singular rather than plural names
+
+var directionToHead = CompassPoint.West
+// now that directionToHead is declared as a CompassPoint, we can use dot syntax
+directionToHead = .South  // Swift knows this is a CompassPoint, so we must mean CompassPoint.East
+
+switch directionToHead {
+case .North:
+    print("Say Hi to Santa!")
+case .East:
+    print("Where the sun rises")
+case .West:
+    print("Where the skies are blue")
+case .South:
+    print("Watch out for penguins")
+default:
+    print("Be careful!")
+}
+
+
+// Associated Values
+// store values of different types in an enum
+enum Barcode {
+    
+    case UPCA(Int, Int, Int, Int)
+    
+    case QRCode(String)
+}
+var productBarcode = Barcode.UPCA(8, 85909, 51226, 3)
+
+
+// when re-assigning to .QRCode, the UPCA is released.  Variables of the Barcode type can hold a UPCA or QRCode, not BOTH at once!
+productBarcode = .QRCode("ABC")
+
+switch productBarcode {
+//case .UPCA(let numberSystem, let manufacturer, let product, let check): // for when all members aren't constants
+case let .UPCA(numberSystem, manufacturer, product, check):
+    print("\(manufacturer), \(product)")
+case .QRCode(let code):
+    print("\(code)")
+}
+
+// Raw Values
+// alternative to associated values, these enum members are prepopulated with default values (called raw values)
+enum ASCIIControlCharacter: Character {
+    
+    case Tab = "\t"
+    
+    case LineFeed = "\n"
+    
+    case CarriageReturn = "\r"
+}
+// raw values are prepopulated and predefined in the enum definition
+// raw values can be strings, characters, or any of the integer or floating-point types
+// the raw value for a particular enum is always the same
+// they differer from associated values - which are set when you create a new constant or variable based on one of the enum's members,
+
+// Auto-incrementation increments the raw value for each enum member
+enum Planet: Int {
+    case Mercury = 1, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune
+}
+let earthsOrder = Planet.Earth.rawValue // access the raw value with .rawValue
+
+// an enum with a type of rawValue (Int, Double, String, etc) automatically gets an initializer that accepts a rawValue type
+let seventhPlanet = Planet(rawValue: 7) // returns Planet?, it is a failable initializer
+seventhPlanet!
+
+// optional binding to a switch statement
+if let somePlanet = Planet(rawValue: 9) {
+    switch somePlanet {
+    case .Earth:
+        print("Safe for humans")
+    default:
+        print("Not safe for humans")
+    }
+}
+else {
+    print("Planet not found")
+}
+
+
+
+/* Classes and Structures */
+// Structures and Enumerations are value types
