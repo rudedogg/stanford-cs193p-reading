@@ -527,3 +527,88 @@ else {
 
 /* Classes and Structures */
 // Structures and Enumerations are value types
+// all of the basic types in Swift (Integer, Double, Dictionary, String, Boolean, and Array) are actually Structs behind the scene, which are value types
+// All structures and enums are value tyupes in Swift
+// Any structure or enumeration instances you create are always copied when passed around in code
+
+struct Resolution {
+    var width = 0
+    var height = 0
+}
+
+let hd = Resolution(width: 1920, height: 1080)
+var cinema = hd // a copy of hd is made, and assigned to cinema. Even though they share the same width, height, cinema and hd are two seperate instances
+cinema.width = 2048
+cinema.width
+hd.width
+
+
+// enums are also by value
+var currentDirection = CompassPoint.West
+let rememberedDirection = currentDirection
+currentDirection = .East
+rememberedDirection // still .West, since a copy was made
+
+// Classes are Reference Types
+// When assigned to a variable/constant or passed to a function, a reference to the existing instance is passed
+class VideoMode {
+    var resolution = Resolution()
+    var interlaced = false
+    var frameRate = 0.0
+    var name: String?
+}
+let tenEighty = VideoMode()
+tenEighty.resolution = hd
+tenEighty.interlaced = true
+tenEighty.name = "1080i"
+tenEighty.frameRate = 25.0
+
+// tenEighty is a constant instance of the VideoMode class
+let alsoTenEighty = tenEighty
+alsoTenEighty.frameRate = 30.0
+
+tenEighty.frameRate
+// because classes are reference types, tenEighty and alsoTenEighty are just references to the same class instance
+
+// Identity Operators
+// to test whether two variables/constants point to the exact same instance of a class
+// === - test equal
+// !== - test not equal
+if tenEighty === alsoTenEighty {
+    print("tenEighty and alsoTenEighty are the exact same class instance")
+}
+
+
+// Choosing between Classes and Structures
+// Consider using a structure when one or more of the following apply
+//  - The structures primary purpose is to encapsulate a few relatively simply data values
+//  - It is reasonable to expect the enacapsulated values will be copied when assigning or passing around an instance of the structure
+//  - Any properties stored by the structure are themselves value types, which would be expected to be copied rather than referenced
+//  - the structure does not need to inherit properties or behavior from another existing type
+
+// Examples of good candidates for a struct
+//  - the size of a geometric shape, with width/height properties of type Double
+//  - a way to refer to ranges within a series, with a start and length property, both of type Int
+//  - a point in a 3D coordinate system, with properties x, y, and z of type Double
+
+// In all other cases, define a class, create an instance of the class to be managed and passed by reference.
+// Classes should be the most common data structure in practice - NOT structures
+
+
+// Assignment and Copy Behavior for Strings, Arrays, and Dictionaries
+// Swift's String, Array, and Dictionary types are implemented as structures
+// This is different then Foundation, where NSString, NSArray, and NSDictionary are implemented as classes.i
+
+// Swift optimized the memory management of copying, and only does it when necessary.  Don't avoid assignment/copying - let Swift handle the optimization
+
+
+/* Properties */
+// Lazy Stored Properties
+// a Lazy Stored Property is a property whose value isn't calculated until it is first used.
+// it is indicated with the "lazy" modifier before the declaration
+// a lazy property must always be declared as a variable - it cannot be a constant since it's value is assigned after initialization (constants must have a value before initialization)
+// lazy properties are useful when the initial property is dependent on outside factors whose values aren't known until after initialization is complete
+// also useful if the setup of the property is expensive/complex, and shouldn't be done unless/until it is needed.
+// a use case might be reading a file into memory - we don't want to do that on initialization because it can be time consuming, so using lazy would be a good fit
+// if multiple threads access a lazy property simultaneously, the property may be initialized more than once
+
