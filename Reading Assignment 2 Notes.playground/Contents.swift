@@ -612,3 +612,210 @@ if tenEighty === alsoTenEighty {
 // a use case might be reading a file into memory - we don't want to do that on initialization because it can be time consuming, so using lazy would be a good fit
 // if multiple threads access a lazy property simultaneously, the property may be initialized more than once
 
+
+// Property Observers
+// property observers observer and respond to changes in a properties value.
+// they are called every time a properties value is set - even if the value is the same as the existing value
+// they can be added to any stored property (except lazy stored properties)
+// they can be added to any inherited property (whether stored or computed) by overriding the property within a subclass (see Overriding chapter)
+// not needed for non-overridden computed properties, because you can use the setter instead.
+
+// you can define either or both of the observers on a property:
+// willSet - called just before the value is stored
+// didSet - called immediately after the new value is stored
+// willSet is passed the new property value, you can specify a name, if not the default name of "newValue" is used
+// didSet is passed the old value, you can specify a name, if not the default name of "oldValue" is used
+// willSet and didSet are not called when a value is set in an initializer before delegation takes place
+class StepCounter {
+    var totalSteps: Int = 0 {
+        willSet(newTotalSteps) {
+            print("About to set steps to \(newTotalSteps)")
+        }
+        didSet { // no custom name, using default oldValue name
+            print("Changed steps from \(oldValue) to \(totalSteps)")
+            // totalSteps += 1  // this would NOT trigger willSet/didSet again
+        }
+    }
+}
+var steps = StepCounter()
+steps.totalSteps = 5
+steps.totalSteps = 19
+steps.totalSteps = 19 // willSet and didSet property observers are still called
+
+
+// Global and Local Variables
+// a global is defined outside any function, method, closure or type
+// global constants and variables are always computed lazily, but do not need the lazy modifier
+// local constants and variables are never computed lazily (unless using the lazy keyword)
+
+
+// Type Properties
+// properties assigned to the type rather than the instance.  Only one set for the type.
+// useful for values that are universal to all instances of a type, such as a constant property all instances can use
+// for value types (structures and enumerations) you can define stored and computed TYPE properties
+// for reference types (classes) you can only define computed TYPE properties
+// unlike stored instance properties, stored type properties MUST be given a default value (since the type itself has no initializer)
+// type properties are defined with the static keyword (for classes with computed type properties, you can use the class keyword instead so subclasses can override)
+
+struct SomeStructure {
+    static var storedTypeProperty = "Some value"
+    static var computedTypeProperty: Int {
+        return 1
+    }
+}
+
+enum SomeEnumeration {
+    static var storedTypeProperty = "Some value"
+    static var computedTypeProperty: Int {
+        return 6
+    }
+}
+
+class SomeClass {
+    static var storedTypeProperty = "Some value"
+    static var computedTypeProperty: Int {
+        return 27
+    }
+    class var overrideableComputedTypeProperty: Int {
+        return 107
+    }
+}
+// although the examples above only show read only computed type properties, read/write can be used
+
+// Querying and Setting Type Properties
+// type properties are queries and set with dot syntax, but on the TYPE rather than the instance!
+SomeClass.storedTypeProperty = "Some other value"
+SomeClass.storedTypeProperty
+
+struct Player {
+    static let maxHP = 100 // could make this a var and update it in currentHP's didSet
+    var currentHP:Int = 100 {
+        didSet {
+            if currentHP > Player.maxHP {
+                currentHP = Player.maxHP
+            }
+        }
+    }
+}
+
+var me = Player()
+me.currentHP = 1000
+me.currentHP
+me.currentHP = 99
+me.currentHP
+
+
+
+/* Methods */
+// Instance Methods
+// Classes, Enumerations, and Structures can all define instance (and type) methods
+// provide ways to access and modify the instances properties, or by providing functionality related to the instances purpose
+// instance methods have the exact same syntax as functions
+class Counter {
+    var count = 0
+    
+    func increment() {
+        ++count
+    }
+    
+    func decrement() {
+        --count
+    }
+    // refer to the methods first parameter using a preposition such as with, for, or by:
+    func incrementBy(val: Int) { // this method name is good style. It can be read as a sentence.
+        count += val
+    }
+}
+
+var myCounter = Counter()
+myCounter.incrementBy(56)
+myCounter.count
+
+// modifying external parameter names
+class Table {
+    var legs = 4
+    
+    func increaseLegsTo(newLegCount newLegCount: Int) { // double up the parameter name to make it required in the func call
+        legs = newLegCount
+    }
+}
+var kitchenTable = Table()
+kitchenTable.increaseLegsTo(newLegCount: 6)
+kitchenTable.legs
+
+// The self Property
+// Every instance has an implicit property called self, which is exactly equivelent to the instance itself
+
+// self rarely needs used, the main exception is when an instance method parameter name is the same as an instance property (the parameter name takes precedence)
+/* // this should work but doesn't compile.  Using an online compiler it works with Swift 1.2 and 2.0, not sure what the deal is
+struct NewPoint {
+    var x = 0.0, y = 0.0
+    
+    func isToTheRightOfX(x: Double) -> Bool {
+        return self.x > x
+    }
+}
+let somePoint = NewPoint(x: 4.1,y: 5.2)
+somePoint.isToTheRightOfX(1.3)
+*/
+
+
+// Modifying Value Types from Within Instance Methods
+// By default properties of a value type (struct and enum) cannot be modified from within its instance methods
+// however, a method can be marked with the mutating keyword to permit the behavior (changes to properties are written when the method ends)
+// mutating instance methods can set the self property to a new instance of the type, replacing itself when the method ends
+
+struct Enemy {
+    var health = 100
+    mutating func reduceHealthBy(hp: Int) {
+        health -= hp
+    }
+    
+    mutating func respawn() {
+        self = Enemy()
+    }
+}
+var bigBoss = Enemy()
+bigBoss.health
+bigBoss.reduceHealthBy(20)
+bigBoss.health
+// respawn sets self = Enemy() // this replaces the current instance with a newly created one
+bigBoss.respawn()
+bigBoss.health
+let immortalBoss = Enemy()
+//immortalBoss.reduceHealthBy(5) // not allowed, constants can't use mutating instance methods!
+
+// enum mutating method example
+enum PlayerState {
+    case Dead, Alive
+    
+    mutating func killOrRespawn() {
+        switch self {
+        case Dead:
+            self = PlayerState.Alive
+        case Alive:
+            self = PlayerState.Dead
+        }
+    }
+}
+var myState = PlayerState.Alive
+myState.killOrRespawn()
+myState
+
+
+// Type Methods
+// methods that are called on the type itself.  Work for classes, enums, and structs
+// use the "static" keyword to signify a type method
+// use "class" to allow subclasses to override
+class SomeNewClass {
+    class func someTypeMethod() {
+      print("called")
+        // self in the type method would refer to the type itself
+        // calling other type methods doesn't require the type name, this type and it's properties are in scope
+    }
+}
+
+SomeNewClass.someTypeMethod()
+
+
+/* Subscripts */
