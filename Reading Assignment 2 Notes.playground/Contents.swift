@@ -819,3 +819,364 @@ SomeNewClass.someTypeMethod()
 
 
 /* Subscripts */
+// subscripts are shortcuts for accessing and modifying elements of a list, collection or sequence.
+// classes, structure, and enumerations can define subscripts.  
+// subscripts can be read/write or read only.  this is chosen by implementing a getter and/or setter (same as computed properties
+/*
+subscript(index: Int) -> Int {
+    get {
+        // return an Int
+    }
+    
+    set(newValue) {
+        // set it to the new value
+    }
+}
+*/
+
+struct TimesTable {
+    let multiplier: Int
+    
+    // read-only subscript (can drop the get {} )
+    // using a read-only subscript makes sense, a times table is static and based on mathematical rules
+    subscript(index: Int) -> Int {
+        return multiplier * index
+    }
+}
+let threeTimesTable = TimesTable(multiplier: 3)
+threeTimesTable[5]
+
+// Subscript Usage
+// The Disctionary type implements subscript behind the scenes. (the subscript returns an Optional)
+
+// Subscript options
+// subscripts can take any number of input parameters, and can return any type.
+// subscripts can use variable and variadic parameters, but cannot use in-out parameters or provide default param values
+// a class or struct can provide as many subscript implementations it needs, and the correct implementation will be inferred using the types of the value(s) in the subscript braces[].  This is known as subscript overloading
+struct Matrix {
+    let rows: Int, cols: Int
+    var grid: [Double]
+    
+    init(rows: Int, cols: Int) {
+        self.rows = rows
+        self.cols = cols
+        grid = Array(count: rows * cols, repeatedValue: 0.0)
+    }
+    
+    func indexIsValidForRow(row: Int, col: Int) -> Bool {
+        return row >= 0 && row < rows && col >= 0 && col < cols
+    }
+    
+    subscript(row: Int, col: Int) -> Double {
+        get {
+            assert(indexIsValidForRow(row, col: col), "Index out of range")
+            return grid[(row*cols) + col]
+        }
+        set {
+            assert(indexIsValidForRow(row, col: col), "Index out of range")
+            return grid[(row*cols) + col] = newValue
+        }
+    }
+}
+
+var matrix = Matrix(rows: 2, cols: 2)
+matrix[0, 1] = 5
+matrix[0, 1]
+matrix[0,0] // 0
+
+
+
+/* Inheritance */
+// classes can inherit methods, properties, and subscripts.
+// a subclass inherits from a class (that class is called the superclass)
+// the subclass can override the superclass, replacing the superclasses behavior/etc with it's own
+// classes can also add property observers to inherited properties and be notified of changes
+
+// Defining a Base Class
+// any class that doesn't inherit from another class is known as a base class
+// swift doesn't have a universal/default inherited class.  all classes are base classes unless you specify a superclass
+class Vehicle {
+    var currentSpeed = 0.0
+    var description: String {
+        return "traveling at \(currentSpeed) miles per hour"
+    }
+    
+    func makeNoise() {
+        // do nothing
+    }
+}
+let someVehicle = Vehicle()
+someVehicle.currentSpeed = 5.3
+someVehicle.description
+
+
+/* Subclassing */
+// subclassing is the act of basing a new class off an existing class
+// you inherit it's characteristics, which can then be refined (or added to).
+// a subclass is declared by listing the superclass name, after the class name and following a colon
+class Bicycle: Vehicle {
+    var hasBasket = false
+}
+
+let bicycle = Bicycle()
+bicycle.hasBasket
+bicycle.currentSpeed = 15.0
+bicycle.description
+
+// subclasses can be subclassed
+class Tandem: Bicycle {
+    var currentNumberOfPassengers = 0
+}
+
+let tandem = Tandem()
+// tandem inherites from Bicycle, which inherits from Vehicle
+tandem.hasBasket = true
+tandem.currentNumberOfPassengers = 2
+tandem.currentSpeed = 350.0
+tandem.description
+
+// Overriding
+// overriding is when a subclass supplies it's own implementation of an instance method, type method, instance property, type property, or subscript
+
+// to override something, just use the override keyword
+// it can be useful to access the superclass properties, methods, or subscripts when overriding - to do so use the super keyword
+// super.someMethod() // access an overridden method within the overriding method implementation
+// super.someProperty // access an overridden property in a getter/setter
+// super[someIndex] // access the superclass version of a subscript within the overriding implementation
+
+
+// Overriding Methods
+class Train: Vehicle {
+    override func makeNoise() {
+        print("Choo Choo!!")
+    }
+}
+let train = Train()
+train.makeNoise()
+
+
+// Overriding Properties
+// the getter and setter of an inherited instance or type property can overridden
+// a custom getter and setter can be used to override any inherited property, both stored and computed.
+
+
+// Overriding Property Getters and Setters
+// a subclass doesn't know if an inherited property is stored or computed (it only knows the name and type to check that the superclass has a matching property)
+// if you provide a setter as part of a property override, you must provide a setter
+// if you don't want to override the getter, return super.propertyName from the getter
+
+class Car: Vehicle {
+    var gear = 1
+    override var description: String {
+        return super.description + " in gear \(gear)"
+    }
+}
+var subaru = Car()
+subaru.description
+
+// overriding property observers
+// to get notified of changes to an inherited property (both stored and calculated) you can use  overriding
+// you cannot add property observers to inherited constant stored properties, or computed read-only properties
+
+class AutomaticCar: Car {
+    override var currentSpeed: Double {
+        didSet {
+            gear = Int(currentSpeed / 10.0) + 1
+        }
+    }
+}
+
+let jeep = AutomaticCar()
+jeep.currentSpeed = 55.0
+jeep.description
+
+
+// Preventing Overrides
+// to prevent a method, property, or subscript from being overridden mark it as "final"
+// any attemot to override when marked final is a compile-time error
+// a class can also be marked final, which prevents it from being subclassed
+
+
+
+/* Initialization */
+// initialization is the process of preparing a class, enum, or struct for use
+// initializers are to make sure a class instance is ready before its first use
+// deinitializers can also be implemented, to perform cleanup before an instance is deallocated
+
+
+// Setting initial values for stored properties
+// classes and structures MUST set all stored properties to a value - either as a default, or in the initializer
+// note: using a default value or setting the value in the initializer will NOT trigger any property observers
+
+// Initializers
+struct Farenheit {
+    var temparature: Double
+    // this would work too (then the init() wouldn't be necessary)
+    // var temparature = 32.0
+    init() {
+        temparature = 32.0
+    }
+}
+
+var f = Farenheit()
+f.temparature
+
+
+// Customizing Initialization
+// Initialization Parameters
+// parameters can be used in the initializers definition to provide custom initializers based on the parameters provided
+struct Celsius {
+    var temparatureInCelsius: Double
+    
+    init(fromFarenheit farenheit: Double) {
+        temparatureInCelsius = (farenheit - 32.0) / 1.8
+    }
+    
+    init(fromKelvin kelvin: Double) {
+        temparatureInCelsius = kelvin - 273.15
+    }
+}
+
+let boilingPointOfWater = Celsius(fromFarenheit: 212.0)
+boilingPointOfWater.temparatureInCelsius
+let freezingPointOfWater = Celsius(fromKelvin: 273.15)
+freezingPointOfWater.temparatureInCelsius
+
+struct Color {
+    var red: Double, green: Double, blue: Double
+    
+    init(red: Double, green: Double, blue: Double) {
+        self.red = red
+        self.green = green
+        self.blue = blue
+    }
+    
+    init(white: Double) {
+        red = white
+        green = white
+        blue = white
+    }
+}
+var halfGray = Color(white: 0.5)
+var magenta = Color(red: 1.0, green: 0.0, blue: 1.0)
+
+
+// note: Swift provides an external parameter name for EVERY initialization parameter, since their names help identify the initializer being used. It's the same as if every parameter had a hash tag before it
+// initalizer external names must always be used if provided, otherwise it's a compile-time error
+// var errorColor = Color(0.5)
+
+
+// Initializer Parameters Without External Names
+// to not use the external parameter name(s) use a _ in the initializer definition: 
+// init(_ celsius: Double) {
+//    temparatureInCelsius = celsius
+// }
+
+// Optional Property Types
+// optional properties don't have to be initialized, are nil until a value is assigned
+
+// Constants in Initializers
+// you can wait to assign a value to a constant property until the initializer. It MUST have a value by the time initialization finished
+class SurveyQuestion {
+    let text: String // constant is set in the init()
+    var response: String? // optional property (notice it isn't assigned in the init() either)
+    
+    init(text: String) {
+        self.text = text
+    }
+    
+    func ask() {
+        print(text)
+    }
+}
+var question = SurveyQuestion(text: "What is your favorite color?")
+question.ask()
+question.response = "BLUE!!!"
+
+// Default Initializers
+// if a base class or structure has default values for all of it's properties and an init() isn't implemented, Swift provides a default initializer which sets all of the properties to their default values
+class ShopppingListItem {
+    var name: String? // optionals automatically has a default value of nil
+    var quantity = 1
+    var purchased = false
+}
+var milk = ShopppingListItem()
+
+// Memberwise initializers for struct
+// structures automatically geta memberwise initializer, if an init isn't implemented - even when its stored properties don't have default values
+// initial values are passed by name
+struct Size {
+    var width, height: Double
+}
+var twoByTwo = Size(width: 2.0, height: 2.0)
+
+
+/* Initializer Delegation for Value Types */
+// initializers calling other initializers - avoids duplicating code
+// value types (struct and enum) don't support inheritance, therefore can only delegate to other initializers they implement
+// classes can inherit and thus need to ensure all stored properties (including inherited ones) are assigned a value)
+// for value types, you use self.init to refer to other initializers (from the same value type)
+// implementing an init on a value type causes you to lose the default init and memberwise initializer
+
+struct SizeWithDefault {
+    var width = 0.0, height = 0.0
+}
+struct Point {
+    var x = 0.0, y = 0.0
+}
+
+struct Rect {
+    var origin = Point()
+    var size = SizeWithDefault()
+    // this is a replacement for the default initializer we lost (due to implementing custom initializers)
+    // it takes no arguments and uses the stored properties default values, and allows us to create an instance with var x = Rect()
+    init() {}
+    // same as the memberwise initializer we would have had we not implemented custom initializers
+    init(origin: Point, size: SizeWithDefault) {
+        self.origin = origin
+        self.size = size
+    }
+    // calculates the center of the point to use as the origin, then it calls(delegates) to the init(origin, size) initializer
+    init(center: Point, size: SizeWithDefault) {
+        let originX = center.x - (size.width / 2)
+        let originY = center.y - (size.height / 2)
+        self.init(origin: Point(x: originX, y: originY), size: size)
+    }
+}
+
+let basicRect = Rect()
+
+let originRect = Rect(origin: Point(x: 1.0, y: 2.0), size: SizeWithDefault(width: 5.0, height: 10.0))
+
+let centerRect = Rect(center: Point(x: 1.0, y: 2.0), size: SizeWithDefault(width: 5.0, height: 10.0))
+
+
+
+/* Setting a Default Property Value with a Closure or a Function */
+// useful if a property requires customization or setup
+// when a new instance is created, the return value of the closure or function is assigned to the property
+// Note: You cannot access self. or other properties in the closure or function, as they have not been initialized
+// when using a closure to assign a property value at initialization, remember to include empty parens () so swift knows you want to execute the closure immediately and assign it's return value. Otherwise the closure itself is assigned!
+
+struct CheckerBoard {
+    let boardColors: [Bool] = {
+        var temporaryBoard = [Bool]()
+        var isBlack = false
+        for i in 1...10 {
+            for j in 1...10 {
+                temporaryBoard.append(isBlack)
+                isBlack = !isBlack
+            }
+            isBlack = !isBlack
+        }
+        return temporaryBoard
+    }() // don't forget the parens when assigning a closure as a default property value
+    
+    func squareIsBlackAtRow(row: Int, column: Int) -> Bool {
+        return boardColors[(row * 10) + column]
+    }
+}
+
+let board = CheckerBoard()
+board.squareIsBlackAtRow(0, column: 1)
+board.squareIsBlackAtRow(9, column: 9)
