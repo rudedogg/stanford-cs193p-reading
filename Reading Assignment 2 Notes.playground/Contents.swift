@@ -1180,3 +1180,124 @@ struct CheckerBoard {
 let board = CheckerBoard()
 board.squareIsBlackAtRow(0, column: 1)
 board.squareIsBlackAtRow(9, column: 9)
+
+
+/* Type Casting */
+// checking the type of a class, or treat it as if it is a different superclass or subclass from its hierarchy
+// type casting is implemented using the "is" and "as" operators
+class MediaItem {
+    var name: String
+    init(name: String) {
+        self.name = name
+    }
+}
+
+class Movie: MediaItem {
+    var director: String
+    init(name: String, director: String) {
+        self.director = director
+        super.init(name: name)
+    }
+}
+
+class Song: MediaItem {
+    var artist: String
+    init(name: String, artist: String) {
+        self.artist = artist
+        super.init(name: name)
+    }
+}
+
+// swift infers the type of [MediaItem] through the common superclass (MediaItem)
+let library = [
+    Movie(name: "Casablanca", director: "Michael Curtiz"),
+    Movie(name: "Goodfellas", director: "Martin Scorsese"),
+    Song(name: "Blue Suede Shoes", artist: "Elvis")
+]
+// items in the array are of type MediaItem, to use them as a Song/Movie they must be check their type, or downcast them to a different type
+
+// Checking Type
+// use the type check operator (is) to check whether an instance is of a certain subclass type
+// returns true if it is of that subclass type, false if not
+var movieCount = 0
+
+for item in library {
+    if item is Movie {
+        ++movieCount
+    }
+}
+
+movieCount
+
+
+// Downcasting
+// a constant or variable of a certain class type may refer to an instance of a subclass behind the scenes. 
+// you downcast the constant/variable as the subclass type using as? or as!
+// as? returns an optional value of the type trying to be downcast to (since downcasting can fail)
+// as! downcasts and force-unwraps the result
+// use as? if you are not sure the downcast will succeed, if it is not successful/possible it's value will be nil
+// use as! if you are POSITIVE the downcast will succeed - if it doesn't there will be a runtime-error!
+// use as to force downcast, and doesn't need optional unwrapping. Is always safe in a switch case statement
+for item in library {
+    // as? returns an optional here, returns Movie?, so we use optional binding to check and create the temp constant
+    if let movie = item as? Movie {
+        print("\(movie.name) directed by \(movie.director)")
+    }
+}
+// casting doesn't actually modifiy the instance or change it's value. Casting just changes how it is treated and accessed
+
+
+// Type Casting for Any and AnyObject
+// Any and AnyObject are type aliases, provided for dealing with non-specific types
+// AnyObject can represent an instance of any class type
+// Any can represent an instance of any type, including function types
+// only use Any/AnyObject when you explicitly need the behavior they provide
+
+
+// AnyObject
+// Cocoa APIs commonly return an array of AnyObject due to objective-c not having explicitly typed arrays
+// the API often defines what types are actually held in the returned [AnyObject], in which case you can use "as" which forces the downcast, without the need for optional unwrapping
+let someObjects: [AnyObject] = [
+    Movie(name: "2001: A Space Odyssey", director: "Stanley Kubrick"),
+    Movie(name: "Alien", director: "Ridley Scott")
+]
+
+
+for object in someObjects {
+    let movie = object as! Movie
+        print("\(movie.name) directed by \(movie.director)")
+}
+
+// shorter version, downcasts the entire array rather than each item
+for movie in someObjects as! [Movie] {
+        print("\(movie.name) directed by \(movie.director)")
+}
+
+
+// Any
+var things = [Any]()
+
+things.append(0.0)
+things.append((1.0, 5.2))
+things.append("test")
+things.append(Movie(name: "Jaws", director: "Steven Spielberg"))
+things.append({ (name: String) -> String in "Hello, \(name)"})
+
+for thing in things {
+    switch thing {
+    case 0 as Int:
+        print("Zero as an Int")
+    case 0 as Double:
+        print("Zero as a Double")
+    case let movie as Movie:
+        print("\(movie.name)")
+    case let text as String:
+        print(text)
+    case let (x, y) as (Double, Double):
+        print("coordinate at \(x), \(y)")
+    default:
+        print("Unknown!")
+    }
+}
+
+// notice the use of the forced version of the type cast operator (as) to check and cast to a type. It is always safe to use in a switch statement
