@@ -1301,3 +1301,55 @@ for thing in things {
 }
 
 // notice the use of the forced version of the type cast operator (as) to check and cast to a type. It is always safe to use in a switch statement
+
+
+
+/* Nested Types */
+// Allow types to have supporting types nested, which help them provide their functionality
+
+struct BlackJackCard {
+    
+    // nested Suit enum
+    enum Suit: Character {
+            case Spades = "♠", Hearts = "♡", Diamonds = "♢", Clubs = "♣"
+    }
+    
+    enum Rank: Int {
+        case Two = 2, Three, Four, Five, Six, Seven, Eight, Nine, Ten
+        case Jack, Queen, King, Ace
+        
+        struct Values {
+            let first: Int, second: Int?
+        }
+        
+        var values: Values {
+            switch self {
+            case .Ace:
+                return Values(first: 1, second: 11)
+            case .Jack, .Queen, .King:
+                return Values(first: 10, second: nil)
+            default:
+                return Values(first: self.rawValue, second: nil)
+            }
+        }
+    }
+
+let rank: Rank, suit: Suit
+
+var description: String {
+var output  = "Suit is \(suit.rawValue),"
+    output += " value is \(rank.values.first)"
+    
+    if let second = rank.values.second {
+        output += " or \(second)"
+    }
+    return output
+    }
+}
+
+
+let theAceOfSpades = BlackJackCard(rank: .Ace, suit: .Spades)
+theAceOfSpades.description
+
+// referring to a nested type outside the context it is defined:
+let heartSymbol = BlackJackCard.Suit.Hearts.rawValue
