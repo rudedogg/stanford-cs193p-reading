@@ -1353,3 +1353,34 @@ theAceOfSpades.description
 
 // referring to a nested type outside the context it is defined:
 let heartSymbol = BlackJackCard.Suit.Hearts.rawValue
+
+
+
+/* Advanced Operators */
+// Overflow Operators
+// if you try to assign a value to a variable that doesn't fit, Swift gives you an error
+// this gives some safety over the alternative - creating an incorrect value
+
+// Overflow Operators allow you to opt-in to truncating the values, rather than throwing an error
+// Overflow addition (&+)
+// Overflow subtraction (&-)
+// Overflow multiplication (&*)
+
+// numbers can overflow in both the positive and negative direction
+var unsignedOverflow = UInt8.max
+//  11111111
+unsignedOverflow = UInt8.max &+ 1
+// 100000000
+unsignedOverflow
+
+
+// negative overflow
+unsignedOverflow &- 1
+
+
+// signed overflow
+var signedOverflow = Int8.min
+//  10000000
+signedOverflow &- 1
+//  01111111 - subtracting 1 wraps around and the sign is reversed
+
